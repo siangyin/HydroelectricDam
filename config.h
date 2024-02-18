@@ -4,5 +4,6 @@
 #define _XTAL_FREQ 4000000
 
 extern unsigned int ADC_WATER_LVL;
+extern unsigned char GATE_STATUS;
 
 
