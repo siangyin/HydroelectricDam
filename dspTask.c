@@ -3,9 +3,12 @@
 
 #define INITIAL_CLOSE_TIME 10 // Example value for INITIAL_CLOSE_TIME
 #define INITIAL_OPEN_TIME 10 // Example value for INITIAL_OPEN_TIME
+#define MIN_ALLOWABLE_LEVEL 800
+#define SAFE_LEVEL 500
 
 // Function Declarations:
-void sysTask_GateController(void);
+void sysTask_GateController(unsigned char status);
+void sysTask_AutoGateOnWater(unsigned int waterLevel);
 
 // - Defined in other file(s):
 unsigned int adc_GetConversion(void);
@@ -19,10 +22,11 @@ unsigned char hour = 0, min = 0, sec = 0; // Variables for time tracking
 unsigned int ADC_WATER_LVL; // Result of ADC conversion
 unsigned char GATE_STATUS = 'C'; // O as open, C as close, S stop
 
-unsigned char closeTimer = INITIAL_CLOSE_TIME;
-unsigned char openTimer = INITIAL_OPEN_TIME;
+unsigned char closeTimer = 0;
+unsigned char openTimer = 0;
 
 // This function is called by the ISR whenever there is a 1-second interrupt:
+
 void dspTask_OnTimer0Interrupt(void) {
     sec++; // Increment seconds
 
@@ -38,22 +42,12 @@ void dspTask_OnTimer0Interrupt(void) {
         }
     }
 
-    if (GATE_STATUS == 'C') {
-        if (closeTimer > 0) {
-            closeTimer--;
-        } else {
-            sysTask_GateController();
-            closeTimer = INITIAL_CLOSE_TIME;
-        }
+    if (GATE_STATUS == 'C' && closeTimer > 0) {
+        closeTimer--;
+    }
 
-    } else if(GATE_STATUS == 'O'){
-        if (openTimer > 0) {
-            openTimer--;
-        } else {
-            sysTask_GateController();
-            openTimer = INITIAL_OPEN_TIME;
-        }
-
+    if (GATE_STATUS == 'O' && openTimer > 0) {
+        openTimer--;
     }
 
     updateADC = 1;
@@ -62,6 +56,7 @@ void dspTask_OnTimer0Interrupt(void) {
 void dspTask_OnTimer0(void) {
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
+        sysTask_AutoGateOnWater(ADC_WATER_LVL);
         display_Msg_OnLCD(GATE_STATUS, ADC_WATER_LVL);
         updateADC = 0; // Reset flag for next reading
     }
@@ -70,14 +65,33 @@ void dspTask_OnTimer0(void) {
 
 }
 
-void sysTask_GateController() {
+void sysTask_GateController(unsigned char status) {
 
-    if (GATE_STATUS == 'C' || GATE_STATUS == 'O') {
-        GATE_STATUS = GATE_STATUS == 'C' ? 'O' : 'C';
-    } else {
-        // handle current stop and read input
+    switch (status) {
+        case 'O':
+            openTimer = INITIAL_OPEN_TIME;
+            GATE_STATUS = 'O';
+
+            break;
+        case 'C':
+            closeTimer = INITIAL_CLOSE_TIME;
+            GATE_STATUS = 'C';
+
+            break;
+        case 'S':
+
+            GATE_STATUS = 'S';
+            break;
+
     }
+}
 
+void sysTask_AutoGateOnWater(unsigned int waterLevel) {
+    if (waterLevel > MIN_ALLOWABLE_LEVEL && GATE_STATUS == 'C') {
+        sysTask_GateController('O');
+    } else if (waterLevel >= SAFE_LEVEL && waterLevel <= MIN_ALLOWABLE_LEVEL && GATE_STATUS == 'O') {
+        sysTask_GateController('C');
+    }
 
 }
 
