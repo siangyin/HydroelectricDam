@@ -5,6 +5,9 @@
 #define LED2 PORTAbits.RA2
 #define LED3 PORTAbits.RA3
 
+#define SW0 PORTBbits.RB0
+#define SW1 PORTBbits.RB1
+
 #define INITIAL_CLOSE_TIME 10 // Example value for INITIAL_CLOSE_TIME
 #define INITIAL_OPEN_TIME 10 // Example value for INITIAL_OPEN_TIME
 #define MIN_ALLOWABLE_LEVEL 800
@@ -21,6 +24,8 @@ unsigned int adc_GetConversion(void);
 void display_WaterLvl_OnSevSeg(unsigned int waterLevel);
 void display_Msg_OnLCD(unsigned char gate, unsigned int waterLevel);
 void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
+
+
 
 // Global Variables:
 
@@ -76,9 +81,6 @@ void dspTask_OnTimer0(void) {
     }
     display_WaterLvl_OnSevSeg(ADC_WATER_LVL); // Display ADC result on 7-segment display
 
-
-
-
 }
 
 void sysTask_GateController(unsigned char status) {
@@ -87,21 +89,16 @@ void sysTask_GateController(unsigned char status) {
         case 'O':
             openTimer = INITIAL_OPEN_TIME;
             alarmTimer = 3;
-
             GATE_STATUS = 'O';
-
             break;
         case 'C':
             closeTimer = INITIAL_CLOSE_TIME;
             alarmTimer = 3;
             GATE_STATUS = 'C';
-
             break;
         case 'S':
-
             GATE_STATUS = 'S';
             break;
-
     }
 }
 
@@ -118,19 +115,14 @@ void alarm_trigger(unsigned int timer) {
     switch (timer) {
         case 3:
             tmr1_StartTone(HALF_PERIOD1, FULL_PERIOD1);
-
             break;
         case 2:
             tmr1_StartTone(HALF_PERIOD2, FULL_PERIOD2);
-
             break;
         case 1:
-
             tmr1_StartTone(HALF_PERIOD3, FULL_PERIOD3);
-
             break;
     }
-
     alarmTimer--;
 }
 
@@ -138,4 +130,25 @@ void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3) {
     LED1 = led1 == 1 ? 1 : 0;
     LED2 = led2 == 1 ? 1 : 0;
     LED3 = led3 == 1 ? 1 : 0;
+}
+
+unsigned char usrTask_CheckInput(void) {
+    unsigned char detect = 0;
+
+    if (SW0 == 0 || SW1 == 0) {
+        __delay_ms(20);
+        if (SW0 == 0 || SW1 == 0) {
+            detect = SW0 == 0 ? 1 : 2;
+            if (GATE_STATUS == 'S') {
+                GATE_STATUS = detect == 1 ? 'O' : 'C';
+            } else {
+                GATE_STATUS = 'S';
+            }
+
+            while (SW0 == 0 || SW1 == 0);
+        }
+    }
+
+
+    return detect;
 }
