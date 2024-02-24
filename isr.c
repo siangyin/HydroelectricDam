@@ -15,6 +15,7 @@ const unsigned int FULL_PERIOD3 = 1319; // 1046, 1175, 1319
 
 
 // Function Declarations
+unsigned int getHalfPeriod(void);
 // - Defined in other file(s)
 void dspTask_OnTimer0Interrupt(void);
 
@@ -38,7 +39,7 @@ void __interrupt() isr(void) {
             BUZZER = ~BUZZER; // Toggle the buzzer stat
             tmr1_RunCount++;
             // Reload Timer1 again
-            preload_value = (MAX_COUNT_VALUE_16BIT_TIMER - HALF_PERIOD1); //
+            preload_value = (MAX_COUNT_VALUE_16BIT_TIMER - getHalfPeriod()); //
             TMR1H = (unsigned char) (preload_value >> 8);
             TMR1L = (unsigned char) preload_value;
         } else {
@@ -67,4 +68,16 @@ void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod) {
     tmr1_TotalReqdCount = fullPeriod;
     tmr1_RunCount = 0;
     T1CONbits.TMR1ON = 1; // Start timer
+}
+
+unsigned int getHalfPeriod(void) {
+    switch (ALARM_BUZZER_COUNT) {
+        case 3:
+            return HALF_PERIOD1;
+        case 2:
+           return HALF_PERIOD2;
+        case 1:
+            return HALF_PERIOD3;
+    }
+   
 }
