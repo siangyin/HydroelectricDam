@@ -17,7 +17,7 @@ const unsigned int FULL_PERIOD3 = 1319; // 1046, 1175, 1319
 // Function Declarations
 unsigned int getHalfPeriod(void);
 // - Defined in other file(s)
-void dspTask_OnTimer0Interrupt(void);
+void dspTask_BuzzerDoReMi(void);
 
 unsigned int tmr1_TotalReqdCount;
 unsigned int tmr1_RunCount;
@@ -25,7 +25,7 @@ unsigned int tmr1_RunCount;
 void __interrupt() isr(void) {
     if (PIR0bits.TMR0IF == 1) { // Check Timer0 interrupt flag
         PIR0bits.TMR0IF = 0; // Clear Timer0 interrupt flag
-        dspTask_OnTimer0Interrupt(); // Call display task on Timer0 interrupt
+        dspTask_BuzzerDoReMi(); // Call display task on Timer0 interrupt
 
         // Reload the preload value for next interrupt
         TMR0H = 0x0B;
@@ -52,7 +52,7 @@ void __interrupt() isr(void) {
     // external interrupt
     if (PIR0bits.INTF == 1) { // check INT flag
         PIR0bits.INTF = 0; // clear INT flag
-        PORTAbits.RA0 = ~PORTAbits.RA0; // toggle LED at RA0
+        PORTAbits.RA0 = ~PORTAbits.RA0; // toggle LED at RA0 
     }
 }
 

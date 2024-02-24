@@ -10,8 +10,8 @@ void initADC(void);
 void initSysTimer0(void);
 void initSysTimer1(void);
 void initLCD(void);
-void dspTask_OnTimer0(void);
-unsigned char usrTask_CheckInput(void);
+void dspTask_AdcWaferLevel(void);
+unsigned char usrTask_CheckGateStatus(void);
 
 void main(void) {
     initSysPins(); // Initialize system pins
@@ -21,8 +21,8 @@ void main(void) {
     initLCD();
 
     while (1) {
-        dspTask_OnTimer0();
-        usrTask_CheckInput();
+        dspTask_AdcWaferLevel();
+        usrTask_CheckGateStatus();
     }
 }
 
