@@ -1,32 +1,25 @@
 #include <xc.h>
 #include "config.h"
 
-void initSysPins(void) {
-    // Configure analog and digital pins
-    ANSELA = 0b00000001; // Set RA0 as analog input
-    ANSELC = 0b00000001; // Set RC0 as analog input
+/* __ FUNCTIONS DECLARATION __ */
+// Defined in this file
+void initSysPins(void);
+void initSysTimer0(void);
 
+// Defined in other file(s)
+
+void initSysPins(void) {
+    ANSELA = 0b00000001; // Set RA0 as analog input
+    ANSELB = 0b00000000;
+    ANSELC = 0b00000001; // Set RC0 as analog input
     ANSELD = 0b00000000;
     ANSELE = 0b00000000;
 
-    ANSELB = 0b00000000;
-    TRISB = 0b00000011; // Set RB0 & RB1 as input pin
-    
     TRISA = 0b11000001; // Set RA1, RA2, RA3, RA5 as outputs
+    TRISB = 0b00101011; // Set RB0 & RB1 as input pin
     TRISC = 0b00000000; // Set RC0 as output
-
     TRISD = 0b00001111;
     TRISE = 0b11111100;
-
-}
-
-void initSysExtInt(void) {
-    INTCONbits.GIE = 0; // disable global interrupt
-    PIR0bits.INTF = 0; // clear external INT flag
-    INTPPS = 0x08; // map external INTPPS =0x08(RB0)/ INTPPS =0x09(RB1)
-    INTCONbits.INTEDG = 1; // configure for rising edge
-    PIE0bits.INTE = 1; // enable external INT interrupt
-    INTCONbits.GIE = 1; // enable global interrupt
 }
 
 void initSysTimer0(void) {
@@ -50,4 +43,11 @@ void initSysTimer1(void) {
     INTCONbits.GIE = 1;
 }
 
-
+void initSysExtInt(void) {
+    INTCONbits.GIE = 0; // disable global interrupt
+    PIR0bits.INTF = 0; // clear external INT flag
+    INTPPS = 0x08; // map external INTPPS =0x08(RB0)/ INTPPS =0x09(RB1)
+    INTCONbits.INTEDG = 1; // configure for rising edge
+    PIE0bits.INTE = 1; // enable external INT interrupt
+    INTCONbits.GIE = 1; // enable global interrupt
+}

@@ -1,12 +1,7 @@
 #include <xc.h>
 #include "config.h"
 
-#define LED1 PORTAbits.RA1
-#define LED2 PORTAbits.RA2
-#define LED3 PORTAbits.RA3
 
-#define SW0 PORTBbits.RB0
-#define SW1 PORTBbits.RB1
 
 #define INITIAL_CLOSE_TIME 10 //  value for INITIAL_CLOSE_TIME
 #define INITIAL_OPEN_TIME 10 //  value for INITIAL_OPEN_TIME
@@ -28,8 +23,10 @@ unsigned char includes(const int arr[], int size, unsigned int value);
 
 // Global Variables:
 unsigned char updateADC = 0; // Flag to indicate ADC update
-unsigned char hour = 0, min = 0, sec = 0; // Variables for time tracking
-unsigned int ADC_WATER_LVL; // Result of ADC conversion
+unsigned char updateLCD = 0;
+unsigned char sec = 0;
+
+unsigned int ADC_WATER_LVL = 0;// Result of ADC conversion
 unsigned char GATE_STATUS = 'C'; // O as open, C as close, S stop
 
 unsigned char closeTimer = 0;
@@ -43,14 +40,7 @@ void dspTask_OnTimer0Interrupt(void) {
 
     if (sec > 59) {
         sec = 0;
-        min++;
-        if (min > 59) {
-            min = 0;
-            hour++;
-            if (hour > 23) {
-                hour = 0;
-            }
-        }
+        
     }
 
     if (GATE_STATUS == 'C' && closeTimer > 0 && ALARM_BUZZER_COUNT == 0) {
@@ -69,7 +59,7 @@ void dspTask_OnTimer0Interrupt(void) {
     updateADC = 1;
 }
 
-void dspTask_OnTimer0(void) {
+void updateDisplay(void) {
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
         //ADC_WATER_LVL = (ADC_WATER_LEVEL/1023.0) * 100;
@@ -137,17 +127,17 @@ void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3) {
 unsigned char usrTask_CheckInput(void) {
     unsigned char detect = 0;
 
-    if (SW0 == 0 || SW1 == 0) {
+    if (PB0 == 0 || PB1 == 0) {
         __delay_ms(20);
-        if (SW0 == 0 || SW1 == 0) {
-            detect = SW0 == 0 ? 1 : 2;
+        if (PB0 == 0 || PB1 == 0) {
+            detect = PB0 == 0 ? 1 : 2;
             if (GATE_STATUS == 'S') {
                 GATE_STATUS = detect == 1 ? 'O' : 'C';
             } else {
                 GATE_STATUS = 'S';
             }
 
-            while (SW0 == 0 || SW1 == 0);
+            while (PB0 == 0 || PB1 == 0);
         }
     }
 

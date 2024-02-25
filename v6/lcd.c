@@ -38,8 +38,8 @@ void LCD_send(char data, char rs) {
     __delay_ms(1);
 }
 
-void display_Msg_OnLCD(unsigned char gate, unsigned int water) {
-        LCD_send(0b00000001, 0); // Clear LCD display 
+void display_Msg_OnLCD(unsigned char gate, unsigned char water) {
+    LCD_send(0b00000001, 0); // Clear LCD display 
     unsigned int i;
     // Define line1 array to hold up to 15 characters
     char line1[16];
@@ -48,30 +48,39 @@ void display_Msg_OnLCD(unsigned char gate, unsigned int water) {
     // Assign initial value to line1 based on gate parameter
     switch (gate) {
         case 1:
-            strcpy(line2, "Gate: Closing");
+            strcpy(line2, "Gate: TB-Close");
             break;
 
         case 2:
-            strcpy(line2, "Gate: Close");
+            strcpy(line2, "Gate: Closing");
             break;
 
         case 3:
-            strcpy(line2, "Gate: Opening");
+            strcpy(line2, "Gate: Close");
             break;
-            
+
         case 4:
-            strcpy(line2, "Gate: Open");
+            strcpy(line2, "Gate: TB-Open");
             break;
 
         case 5:
+            strcpy(line2, "Gate: Opening");
+            break;
+
+        case 6:
+            strcpy(line2, "Gate: Open");
+            break;
+
+        case 7:
             strcpy(line2, "Gate: Stop");
             break;
+
         default:
             strcpy(line2, "Gate: ERROR");
             break;
     }
 
-    if (water==1) {
+    if (water == 1) {
         strcpy(line1, "Water: High");
     } else {
         strcpy(line1, "Water: Safe");
@@ -84,4 +93,13 @@ void display_Msg_OnLCD(unsigned char gate, unsigned int water) {
     LCD_send(0b11000000, 0); // Move to the start of the second line
     for (i = 0; line2[i] != 0; i++)
         LCD_send(line2[i], 1);
+
+
 }
+const unsigned char GATE_1_TO_BE_CLOSE = 1;
+const unsigned char GATE_2_CLOSING = 2;
+const unsigned char GATE_3_CLOSE = 3;
+const unsigned char GATE_4_TO_BE_OPEN = 4;
+const unsigned char GATE_5_OPENING = 5;
+const unsigned char GATE_6_OPEN = 6;
+const unsigned char GATE_7_STOP = 7;

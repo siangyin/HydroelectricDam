@@ -1,8 +1,18 @@
 #include <xc.h>
 #include "config.h"
-#define BUZZER PORTBbits.RB3 // Buzzer is connected at RB3
 
 const unsigned int MAX_COUNT_VALUE_16BIT_TIMER = 65536;
+
+//const unsigned int full_period[] = {
+//    1319, // 1:E
+//    1175, // 2:D
+//    1047, // 3:C
+//};
+//const unsigned int half_period[] = {
+//    379, // 1:E
+//    426, // 2:D
+//    478, // 3:C
+//};
 
 const unsigned int HALF_PERIOD1 = 478; // 478, 426, 379
 const unsigned int FULL_PERIOD1 = 1046; // 1046, 1175, 1319

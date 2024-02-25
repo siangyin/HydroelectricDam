@@ -1,47 +1,47 @@
 #include <xc.h>
 #include "config.h"
 
-// Function Declarations:
-// - Defined in this file:
-void initSysPins(void);
+/* __ FUNCTIONS DECLARATION __ */
+// Defined in this file
+void usrTask_CheckInputRB1(void);
 
-// - Defined in other file(s):
+// Defined in other file(s)
 void initSysPins(void);
-void initADC(void);
+void initSysExtInt(void);
 void initSysTimer0(void);
 void initSysTimer1(void);
+
 void initLCD(void);
+void initADC(void);
 void updateDisplay(void);
 
-void dspTask_showStatus(void);
+
 
 void main(void) {
-
-    initSysPins(); // Initialize system pins
-    initADC(); // Initialize ADC module
-    initSysTimer0(); // Initialize Timer0 for periodic interrupts
-    initSysTimer1();
+    initSysPins(); // Initialise the port pins
+    initSysExtInt();
+    initSysTimer0(); // Initialise Timer 0
+    initSysTimer1(); // Initialise Timer 0
+    initADC();
     initLCD();
-
+    
     while (1) {
-        dspTask_showStatus(); // Call display task for updating 7-segment display
+        
+        updateDisplay();
+        usrTask_CheckInputRB1();
+        
     }
-}
+} 
 
-void initSysPins(void) {
-    // Configure analog and digital pins
-    ANSELA = 0b00000001; // Set RA0 as analog input
-    ANSELC = 0b00000001; // Set RC0 as analog input
 
-    ANSELD = 0b00000000;
-    ANSELE = 0b00000000;
-
-    ANSELB = 0b00000000; // Set RB1 as digital input
-    TRISB = 0b00000011; // Set RB0 & RB1 as input pin
-
-    TRISD = 0b00001111;
-    TRISE = 0b11111100;
-
-    TRISA = 0b11000001; // Set RA1, RA2, RA3, RA5 as outputs
-    TRISC = 0b00000000; // Set RC0 as output
+void usrTask_CheckInputRB1(void) {
+    if (PB1 == 0) { // check SW1 for the first time
+        __delay_ms(20); // delay contact bounce period
+        if (PB1 == 0) { // check SW1 for the second time
+            while (PB1 == 0); // wait for switch to be released
+            PORTAbits.RA1 = 1; // turn on RA1 for 5s
+            __delay_ms(5000); // delay for 5s
+            PORTAbits.RA1 = 0; // turn off RA1
+        }
+    }
 }

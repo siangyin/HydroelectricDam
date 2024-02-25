@@ -1,18 +1,14 @@
 #include <xc.h>
 #include "config.h"
-
-/* __ FUNCTIONS DECLARATION __ */
-// Defined in this file
-
-// Defined in other file(s)
+// Function to initialise the ADC
 
 void initADC(void) {
     ADREF = 0b00000000; // Set VREF+ and VREF- to VSS and VDD
     ADCLK = 0b00000011; // Set TAD = 2 us
     ADACQ = 0b00000000; // TACQ to be manually inserted
-    ADCON0 = 0b10000100; // Enable ADC, single conversion, FOSC clock, result is right justified
+    ADCON0 = 0b10000100; // Enable ADC, single conversion, FOSC clock,
+    // result is right justified
 }
-
 // Function to start ADC conversion and get the results
 
 unsigned int adc_GetConversion(void) {
@@ -24,6 +20,5 @@ unsigned int adc_GetConversion(void) {
     while (ADCON0bits.ADGO == 1); // Wait for conversion to complete
     result = ADRESH * 256 + ADRESL; // Get the results
 
-    //result = (result/1023.0)/1000
-    return result; // Return the result
+    return (result); // Return the result
 }
