@@ -6,6 +6,7 @@
 #define LED3 PORTAbits.RA3
 
 // Function Declarations:
+// - Defined in this file:
 void gateController(unsigned char status);
 void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3);
 void playAlarm(unsigned int timer);
@@ -14,10 +15,11 @@ void playAlarm(unsigned int timer);
 unsigned int adc_GetConversion(void);
 void seg_DspAll(unsigned int result);
 void lcd_DspStatus(unsigned char gate, unsigned char water);
-
-//void recordNewWater();
 void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
 unsigned int helper_getToneIndex(unsigned int currCount);
+
+// External variables:
+extern unsigned char GATE_MODE;
 
 // Global Variables:
 const unsigned char GATE_1_TO_BE_CLOSE = 1;
@@ -27,8 +29,6 @@ const unsigned char GATE_4_TO_BE_OPEN = 4;
 const unsigned char GATE_5_OPENING = 5;
 const unsigned char GATE_6_OPEN = 6;
 const unsigned char GATE_7_STOP = 7;
-
-extern unsigned char GATE_MODE;
 
 unsigned int ADC_WATER_LVL = 0;
 unsigned char WATER_STATUS = 0;
@@ -41,21 +41,20 @@ unsigned char updateLCD = 0;
 unsigned char sec = 0;
 unsigned char openingTimer = 0;
 unsigned char closingTimer = 0;
-unsigned char openTimer = 0;
-unsigned char closeTimer = 0;
+unsigned char openTimer = 10;
+unsigned char closeTimer = 20;
 
 unsigned char newWaterStatus;
 unsigned char newGateStatus;
 unsigned char waterStatus_HasChange;
 unsigned char gateStatus_HasChange;
 
-
-
 unsigned char usrActivatedOpen = 0;
 unsigned char usrActivatedClose = 0;
 
 
 // This function is called by the ISR whenever there is sa 1-second interrupt:
+
 void dspTask_OnTimer0Interrupt(void) {
     sec++; // Increment seconds
     if (sec > 99) {
@@ -71,6 +70,14 @@ void dspTask_OnTimer0Interrupt(void) {
     }
 
 
+    if (GATE_MODE == 1 && GATE_STATUS == GATE_6_OPEN && ALARM_BUZZER_COUNT == 0 && openTimer > 0) {
+        openTimer--;
+    }
+
+    if (GATE_MODE == 1 && GATE_STATUS == GATE_3_CLOSE && ALARM_BUZZER_COUNT == 0 && closeTimer > 0) {
+        closeTimer--;
+    }
+
 
     if (ALARM_BUZZER_COUNT > 0) {
         playAlarm(ALARM_BUZZER_COUNT);
@@ -82,8 +89,8 @@ void dspTask_OnTimer0Interrupt(void) {
 
 }
 
+// Function to update status based on ADC readings and gate status
 void dspTask_UpdateStatus(void) {
-
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
         newWaterStatus = ADC_WATER_LVL >= MIN_ALLOWABLE_LEVEL ? 1 : 0;
@@ -98,10 +105,10 @@ void dspTask_UpdateStatus(void) {
                     gateStatus_HasChange = 1;
                 } else if (GATE_STATUS == GATE_4_TO_BE_OPEN && ALARM_BUZZER_COUNT == 0) {
                     openingTimer = 10;
-                    newGateStatus = 5;
+                    newGateStatus = 5; // GATE_5_OPENING
                     gateStatus_HasChange = 1;
                 } else if (GATE_STATUS == GATE_5_OPENING && openingTimer == 0) {
-                    newGateStatus = 6;
+                    newGateStatus = 6; // GATE_6_OPEN
                     gateStatus_HasChange = 1;
                 }
             } else {
@@ -113,12 +120,54 @@ void dspTask_UpdateStatus(void) {
                     newGateStatus = 2; //GATE_2_CLOSING
                     gateStatus_HasChange = 1;
                 } else if (GATE_STATUS == GATE_2_CLOSING && closingTimer == 0) {
-                    newGateStatus = 3;
+                    newGateStatus = 3; // GATE_3_CLOSE
                     gateStatus_HasChange = 1;
                 }
             }
         } else {
-            // hanlde schedule auto gate
+            switch (GATE_STATUS) {
+                case 1: // GATE_1_TO_BE_CLOSE
+                    if (ALARM_BUZZER_COUNT == 0) {
+                        closingTimer = 10;
+                        newGateStatus = 2; //GATE_2_CLOSING
+                        gateStatus_HasChange = 1;
+                    }
+
+                    break;
+                case 2: // GATE_2_CLOSING
+                    if (closingTimer == 0) {
+                        newGateStatus = 3; // GATE_3_CLOSE
+                        gateStatus_HasChange = 1;
+                        closeTimer = 20;
+                    }
+                    break;
+                case 3: // GATE_3_CLOSE
+                    if (closeTimer == 0) {
+                        newGateStatus = 4; // GATE_4_TO_BE_OPEN
+                        gateStatus_HasChange = 1;
+                    }
+                    break;
+                case 4: // GATE_4_TO_BE_OPEN
+                    if (ALARM_BUZZER_COUNT == 0) {
+                        openingTimer = 10;
+                        newGateStatus = 5; // GATE_5_OPENING
+                        gateStatus_HasChange = 1;
+                    }
+                    break;
+                case 5: // GATE_5_OPENING
+                    if (openingTimer == 0) {
+                        newGateStatus = 6; // GATE_6_OPEN
+                        gateStatus_HasChange = 1;
+                        openTimer = 10;
+                    }
+                    break;
+                case 6: // GATE_6_OPEN
+                    if (openTimer == 0) {
+                        newGateStatus = 1; // GATE_1_TO_BE_CLOSE
+                        gateStatus_HasChange = 1;
+                    }
+
+            }
 
         }
 
@@ -175,8 +224,6 @@ void playAlarm(unsigned int timer) {
             tmr1_StartTone(HALF_PERIOD1, FULL_PERIOD1);
             break;
     }
-
-
 
     ALARM_BUZZER_COUNT--;
 }
