@@ -8,20 +8,12 @@
 #define TIMER0_TMR0H 0xC2 // 0x0B 1S// 0xC2  0.5S
 #define TIMER0_TMR0L 0xC2 // 0xDC 1S // 0xC2 0.5S
 
-// Pin definitions
-#define PB1 PORTBbits.RB1
-#define TS2 PORTBbits.RB2
-
-#define LED1 PORTAbits.RA1
-#define LED2 PORTAbits.RA2
-#define LED3 PORTAbits.RA3
-
 // Water level thresholds
 #define MIN_ALLOWABLE_LEVEL 800
 #define SAFE_LEVEL 500
 
 // Global variables
-extern const unsigned int MAX_COUNT_VALUE_16BIT_TIMER;
+
 extern const unsigned int HALF_PERIOD1;
 extern const unsigned int FULL_PERIOD1;
 extern const unsigned int HALF_PERIOD2;
@@ -32,7 +24,7 @@ extern const unsigned int FULL_PERIOD3;
 extern unsigned int ADC_WATER_LVL;
 extern unsigned char WATER_STATUS;
 extern unsigned char GATE_STATUS;
-extern unsigned char GATE_MODE;
+
 extern unsigned int ALARM_BUZZER_COUNT;
 
 extern const unsigned char GATE_1_TO_BE_CLOSE;

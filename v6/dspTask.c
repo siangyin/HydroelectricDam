@@ -1,6 +1,10 @@
 #include <xc.h>
 #include "config.h"
 
+#define LED1 PORTAbits.RA1
+#define LED2 PORTAbits.RA2
+#define LED3 PORTAbits.RA3
+
 // Function Declarations:
 void gateController(unsigned char status);
 void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3);
@@ -23,6 +27,8 @@ const unsigned char GATE_4_TO_BE_OPEN = 4;
 const unsigned char GATE_5_OPENING = 5;
 const unsigned char GATE_6_OPEN = 6;
 const unsigned char GATE_7_STOP = 7;
+
+extern unsigned char GATE_MODE;
 
 unsigned int ADC_WATER_LVL = 0;
 unsigned char WATER_STATUS = 0;

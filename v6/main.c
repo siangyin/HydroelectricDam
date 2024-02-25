@@ -1,6 +1,8 @@
 #include <xc.h>
 #include "config.h"
 
+#define TS2 PORTBbits.RB2
+
 // Function Declarations:
 // - Defined in this file:
 void initSysPins(void);
