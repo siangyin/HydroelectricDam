@@ -10,10 +10,17 @@ void initSysPins(void);
 void initADC(void);
 void initSysTimer0(void);
 void initSysTimer1(void);
+void initSysExtInt(void);
 void initLCD(void);
 void updateDisplay(void);
 
 void dspTask_showStatus(void);
+
+
+// Global Variables:
+unsigned char GATE_MODE = 0;
+
+
 
 void main(void) {
 
@@ -21,9 +28,13 @@ void main(void) {
     initADC(); // Initialize ADC module
     initSysTimer0(); // Initialize Timer0 for periodic interrupts
     initSysTimer1();
+    initSysExtInt();
     initLCD();
 
     while (1) {
+        GATE_MODE = TS2;
+    
+
         dspTask_showStatus(); // Call display task for updating 7-segment display
     }
 }
@@ -37,7 +48,7 @@ void initSysPins(void) {
     ANSELE = 0b00000000;
 
     ANSELB = 0b00000000; // Set RB1 as digital input
-    TRISB = 0b00000011; // Set RB0 & RB1 as input pin
+    TRISB = 0b00000111; // Set RB0 & RB1 as input pin
 
     TRISD = 0b00001111;
     TRISE = 0b11111100;

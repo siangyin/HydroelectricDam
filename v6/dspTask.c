@@ -14,6 +14,7 @@ void display_Msg_OnLCD(unsigned char gate, unsigned char water);
 //void recordNewWater();
 void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
 //unsigned char includes(const int arr[], int size, unsigned int value);
+void usrTask_CheckInputRB0(void);
 
 // Global Variables:
 const unsigned char GATE_1_TO_BE_CLOSE = 1;
@@ -27,7 +28,7 @@ const unsigned char GATE_7_STOP = 7;
 unsigned int ADC_WATER_LVL = 0;
 unsigned char WATER_STATUS = 0;
 unsigned char GATE_STATUS = 3;
-unsigned char GATE_MODE = 1;
+
 unsigned int ALARM_BUZZER_COUNT = 0;
 
 unsigned char updateADC = 0; // Flag to indicate ADC update
@@ -35,11 +36,18 @@ unsigned char updateLCD = 0;
 unsigned char sec = 0;
 unsigned char openingTimer = 0;
 unsigned char closingTimer = 0;
+unsigned char openTimer = 0;
+unsigned char closeTimer = 0;
 
-extern unsigned char newWaterStatus;
-extern unsigned char newGateStatus;
+unsigned char newWaterStatus;
+unsigned char newGateStatus;
 unsigned char waterStatus_HasChange;
 unsigned char gateStatus_HasChange;
+
+
+
+unsigned char usrActivatedOpen = 0;
+unsigned char usrActivatedClose = 0;
 
 //void alarm_trigger(unsigned int timer) {
 //    // sound 1-E,2-D,3-C, eg(1232111222111123211122123)
@@ -60,11 +68,11 @@ unsigned char gateStatus_HasChange;
 //}
 
 
-// This function is called by the ISR whenever there is a 1-second interrupt:
+// This function is called by the ISR whenever there is sa 1-second interrupt:
 
 void dspTask_OnTimer0Interrupt(void) {
     sec++; // Increment seconds
-    if (sec > 59) {
+    if (sec > 99) {
         sec = 0;
     }
 
@@ -76,16 +84,14 @@ void dspTask_OnTimer0Interrupt(void) {
         closingTimer--;
     }
 
-    onLEDs(0, 0, 0);
+
+
     if (ALARM_BUZZER_COUNT > 0) {
-        //onLEDs(1, 1, 1);
         playAlarm(ALARM_BUZZER_COUNT);
-    } else {
-        updateADC = 1;
     }
 
 
-
+    updateADC = 1;
 
 
 }
@@ -99,7 +105,7 @@ void dspTask_showStatus(void) {
         waterStatus_HasChange = WATER_STATUS != newWaterStatus ? 1 : 0;
         gateStatus_HasChange = 0;
 
-        if (GATE_MODE == 1) {
+        if (GATE_MODE == 0) {
             if (newWaterStatus == 1) {
                 if (GATE_STATUS >= GATE_1_TO_BE_CLOSE && GATE_STATUS <= GATE_3_CLOSE) {
                     newGateStatus = 4; // GATE_4_TO_BE_OPEN
@@ -116,21 +122,29 @@ void dspTask_showStatus(void) {
                 if (GATE_STATUS >= GATE_4_TO_BE_OPEN && GATE_STATUS <= GATE_6_OPEN) {
                     newGateStatus = 1; // GATE_1_TO_BE_CLOSE
                     gateStatus_HasChange = 1;
-                } else if (GATE_STATUS == GATE_1_TO_BE_CLOSE || ALARM_BUZZER_COUNT == 0) {
+                } else if (GATE_STATUS == GATE_1_TO_BE_CLOSE && ALARM_BUZZER_COUNT == 0) {
                     closingTimer = 10;
                     newGateStatus = 2; //GATE_2_CLOSING
+                    gateStatus_HasChange = 1;
                 } else if (GATE_STATUS == GATE_2_CLOSING && closingTimer == 0) {
                     newGateStatus = 3;
                     gateStatus_HasChange = 1;
                 }
             }
+        } else {
+            // hanlde schedule auto gate
+
         }
 
         if (waterStatus_HasChange == 1 || gateStatus_HasChange == 1 || sec == 1) {
             WATER_STATUS = waterStatus_HasChange == 1 ? newWaterStatus : WATER_STATUS;
             GATE_STATUS = gateStatus_HasChange == 1 ? newGateStatus : GATE_STATUS;
             updateLCD = 1;
-            ALARM_BUZZER_COUNT = newGateStatus == GATE_4_TO_BE_OPEN || newGateStatus == GATE_1_TO_BE_CLOSE ? 25 : 0;
+
+            if (GATE_STATUS != GATE_7_STOP && (newGateStatus == GATE_4_TO_BE_OPEN || newGateStatus == GATE_1_TO_BE_CLOSE)) {
+                ALARM_BUZZER_COUNT = 25;
+            }
+
         }
 
         updateADC = 0; // Reset flag for next reading
@@ -140,6 +154,13 @@ void dspTask_showStatus(void) {
         display_Msg_OnLCD(GATE_STATUS, WATER_STATUS);
         updateLCD = 0;
     }
+
+    if (ALARM_BUZZER_COUNT > 0 && ALARM_BUZZER_COUNT % 2 == 1) {
+        onLEDs(1, 1, 1);
+    } else {
+        onLEDs(0, 0, 0);
+    }
+
 
     seg_DspAll(ADC_WATER_LVL); // Display ADC result on 7-segment display
 }
