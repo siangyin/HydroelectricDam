@@ -18,6 +18,7 @@ void seg_DspAll(unsigned int result);
 void lcd_DspStatus(unsigned char gate, unsigned char water);
 void tmr1_MakeTone(unsigned int halfPeriod, unsigned int fullPeriod);
 unsigned int isr_GetToneIndex(unsigned int currCount);
+void pwm_Controller(unsigned char state);
 
 // External variables:
 extern unsigned char GATE_MODE;
@@ -38,17 +39,21 @@ unsigned char GATE_STATUS = 3;
 unsigned int ALARM_BUZZER_COUNT = 0;
 
 unsigned char updateADC = 0; // Flag to indicate ADC update
-unsigned char updateLCD = 0;
+unsigned char updateLCD = 0; // Flag to refresh LCD
+unsigned char updatePMW = 1; // Flag to simulate PMW
+
 unsigned char sec = 0;
 unsigned char openingTimer = 0;
 unsigned char closingTimer = 0;
 unsigned char openTimer = 10;
 unsigned char closeTimer = 20;
+unsigned char pmwTimer = 0;
 
 unsigned char newWaterStatus;
 unsigned char newGateStatus;
 unsigned char waterStatus_HasChange;
 unsigned char gateStatus_HasChange;
+
 
 unsigned char usrActivatedOpen = 0;
 unsigned char usrActivatedClose = 0;
@@ -79,6 +84,13 @@ void dspTask_OnTimer0Interrupt(void) {
         closeTimer--;
     }
 
+    if (updatePMW == 1 && pmwTimer > 0) {
+        pwm_Controller(pmwTimer);
+        if (pmwTimer == 1)
+            updatePMW = 0;
+        pmwTimer--;
+    }
+
 
     if (ALARM_BUZZER_COUNT > 0) {
         playAlarm(ALARM_BUZZER_COUNT);
@@ -91,6 +103,7 @@ void dspTask_OnTimer0Interrupt(void) {
 }
 
 // Function to update status based on ADC readings and gate status
+
 void dspTask_UpdateStatus(void) {
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
@@ -108,6 +121,8 @@ void dspTask_UpdateStatus(void) {
                     openingTimer = 10;
                     newGateStatus = 5; // GATE_5_OPENING
                     gateStatus_HasChange = 1;
+                    updatePMW == 1;
+                    pmwTimer = 10;
                 } else if (GATE_STATUS == GATE_5_OPENING && openingTimer == 0) {
                     newGateStatus = 6; // GATE_6_OPEN
                     gateStatus_HasChange = 1;
@@ -120,6 +135,8 @@ void dspTask_UpdateStatus(void) {
                     closingTimer = 10;
                     newGateStatus = 2; //GATE_2_CLOSING
                     gateStatus_HasChange = 1;
+                    updatePMW == 1;
+                    pmwTimer = 10;
                 } else if (GATE_STATUS == GATE_2_CLOSING && closingTimer == 0) {
                     newGateStatus = 3; // GATE_3_CLOSE
                     gateStatus_HasChange = 1;
@@ -132,6 +149,8 @@ void dspTask_UpdateStatus(void) {
                         closingTimer = 10;
                         newGateStatus = 2; //GATE_2_CLOSING
                         gateStatus_HasChange = 1;
+                        updatePMW == 1;
+                        pmwTimer = 10;
                     }
 
                     break;
@@ -153,6 +172,8 @@ void dspTask_UpdateStatus(void) {
                         openingTimer = 10;
                         newGateStatus = 5; // GATE_5_OPENING
                         gateStatus_HasChange = 1;
+                        updatePMW == 1;
+                        pmwTimer = 10;
                     }
                     break;
                 case 5: // GATE_5_OPENING
@@ -180,6 +201,9 @@ void dspTask_UpdateStatus(void) {
             if (GATE_STATUS != GATE_7_STOP && (newGateStatus == GATE_4_TO_BE_OPEN || newGateStatus == GATE_1_TO_BE_CLOSE)) {
                 ALARM_BUZZER_COUNT = 25;
             }
+
+
+
 
         }
 
