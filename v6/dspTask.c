@@ -13,8 +13,7 @@ void display_Msg_OnLCD(unsigned char gate, unsigned char water);
 
 //void recordNewWater();
 void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
-//unsigned char includes(const int arr[], int size, unsigned int value);
-void usrTask_CheckInputRB0(void);
+unsigned int helper_getToneIndex(unsigned int currCount);
 
 // Global Variables:
 const unsigned char GATE_1_TO_BE_CLOSE = 1;
@@ -49,24 +48,6 @@ unsigned char gateStatus_HasChange;
 unsigned char usrActivatedOpen = 0;
 unsigned char usrActivatedClose = 0;
 
-//void alarm_trigger(unsigned int timer) {
-//    // sound 1-E,2-D,3-C, eg(1232111222111123211122123)
-//
-//    const int arrE[] = {25, 21, 20, 19, 15, 14, 13, 12, 8, 7, 6, 3};
-//    const int arrD[] = {24, 22, 18, 17, 16, 11, 9, 5, 4, 2};
-//    const int arrC[] = {23, 10, 1};
-//    unsigned int i = timer;
-//    if (includes(arrE, sizeof (arrE) / sizeof (arrE[0]), i)) {
-//        tmr1_StartTone(HALF_PERIOD3, FULL_PERIOD3);
-//    } else if (includes(arrD, sizeof (arrD) / sizeof (arrD[0]), i)) {
-//        tmr1_StartTone(HALF_PERIOD2, FULL_PERIOD2);
-//    } else if (includes(arrC, sizeof (arrC) / sizeof (arrC[0]), i)) {
-//        tmr1_StartTone(HALF_PERIOD1, FULL_PERIOD1);
-//    }
-//
-//    ALARM_BUZZER_COUNT--;
-//}
-
 
 // This function is called by the ISR whenever there is sa 1-second interrupt:
 
@@ -96,7 +77,7 @@ void dspTask_OnTimer0Interrupt(void) {
 
 }
 
-void dspTask_showStatus(void) {
+void dspTask_UpdateStatus(void) {
 
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
@@ -168,7 +149,6 @@ void dspTask_showStatus(void) {
 void gateController(unsigned char status) {
     ALARM_BUZZER_COUNT = 25;
     GATE_STATUS = status - 1;
-
 }
 
 void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3) {
@@ -178,50 +158,15 @@ void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3) {
 }
 
 void playAlarm(unsigned int timer) {
-    // sound 1-E,2-D,3-C, eg(1232111222111123211122123)
-
-    //    const int arrE[] = {25, 21, 20, 19, 15, 14, 13, 12, 8, 7, 6, 3};
-    //    const int arrD[] = {24, 22, 18, 17, 16, 11, 9, 5, 4, 2};
-    //    const int arrC[] = {23, 10, 1};
-    //    unsigned int i = timer;
-    //    if (includes(arrE, sizeof (arrE) / sizeof (arrE[0]), i)) {
-    //        tmr1_makeTone(HALF_PERIOD3, FULL_PERIOD3);
-    //    } else if (includes(arrD, sizeof (arrD) / sizeof (arrD[0]), i)) {
-    //        tmr1_makeTone(HALF_PERIOD2, FULL_PERIOD2);
-    //    } else if (includes(arrC, sizeof (arrC) / sizeof (arrC[0]), i)) {
-    //        tmr1_makeTone(HALF_PERIOD1, FULL_PERIOD1);
-    //    }
-
-    switch (timer) {
-        case 3:
-        case 6:
-        case 7:
-        case 8:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 19:
-        case 20:
-        case 21:
-        case 25:
+    unsigned int toneIndex = helper_getToneIndex(timer);
+    switch (toneIndex) {
+        case 2:
             tmr1_StartTone(HALF_PERIOD3, FULL_PERIOD3);
             break;
-        case 2:
-        case 4:
-        case 5:
-        case 9:
-        case 11:
-        case 16:
-        case 17:
-        case 18:
-        case 22:
-        case 24:
+        case 1:
             tmr1_StartTone(HALF_PERIOD2, FULL_PERIOD2);
             break;
-        case 1:
-        case 10:
-        case 23:
+        default:
             tmr1_StartTone(HALF_PERIOD1, FULL_PERIOD1);
             break;
     }

@@ -1,26 +1,41 @@
 #include <xc.h>
 #include "config.h"
 
-// Function Declarations:
-// - Defined in this file:
+unsigned int helper_getToneIndex(unsigned int currCount) {
+    switch (currCount) {
+        case 3:
+        case 6:
+        case 7:
+        case 8:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 19:
+        case 20:
+        case 21:
+        case 25:
+            return 2;
 
-unsigned char newWaterStatus=0;
-unsigned char newGateStatus=0;
+        case 2:
+        case 4:
+        case 5:
+        case 9:
+        case 11:
+        case 16:
+        case 17:
+        case 18:
+        case 22:
+        case 24:
+            return 1;
 
-void recordNewWater() {
-    if (ADC_WATER_LVL >= MIN_ALLOWABLE_LEVEL) {
-        newWaterStatus = 1;
-    } else {
-        newWaterStatus = 0;
+        case 1:
+        case 10:
+        case 23:
+            return 0;
+
     }
+ return 0;
+
 }
 
-
-//unsigned char includes(const int arr[], int size, unsigned int value) {
-//    for (int i = 0; i < size; ++i) {
-//        if (arr[i] == value) {
-//            return 1;
-//        }
-//    }
-//    return 0;
-//}

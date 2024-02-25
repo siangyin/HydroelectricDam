@@ -10,7 +10,6 @@ void initADC(void) {
     // result is right justified
 }
 // Function to start ADC conversion and get the results
-
 unsigned int adc_GetConversion(void) {
     unsigned int result;
 
@@ -20,5 +19,5 @@ unsigned int adc_GetConversion(void) {
     while (ADCON0bits.ADGO == 1); // Wait for conversion to complete
     result = ADRESH * 256 + ADRESL; // Get the results
 
-    return (result); // Return the result
+    return result; // Return the result
 }

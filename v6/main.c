@@ -13,17 +13,12 @@ void initSysTimer1(void);
 void initSysExtInt(void);
 void initLCD(void);
 void updateDisplay(void);
-
-void dspTask_showStatus(void);
-
+void dspTask_UpdateStatus(void);
 
 // Global Variables:
 unsigned char GATE_MODE = 0;
 
-
-
 void main(void) {
-
     initSysPins(); // Initialize system pins
     initADC(); // Initialize ADC module
     initSysTimer0(); // Initialize Timer0 for periodic interrupts
@@ -32,27 +27,25 @@ void main(void) {
     initLCD();
 
     while (1) {
-        GATE_MODE = TS2;
-    
-
-        dspTask_showStatus(); // Call display task for updating 7-segment display
+        GATE_MODE = TS2; // to read gate mode input in RB2, Toggle up is for schedule/ down is based on water level
+        dspTask_UpdateStatus(); 
     }
 }
 
 void initSysPins(void) {
     // Configure analog and digital pins
-    ANSELA = 0b00000001; // Set RA0 as analog input
-    ANSELC = 0b00000001; // Set RC0 as analog input
+    ANSELA = 0b00000001; 
+    ANSELC = 0b00000001;
 
     ANSELD = 0b00000000;
     ANSELE = 0b00000000;
 
-    ANSELB = 0b00000000; // Set RB1 as digital input
-    TRISB = 0b00000111; // Set RB0 & RB1 as input pin
+    ANSELB = 0b00000000; 
+    TRISB = 0b00000111; 
 
     TRISD = 0b00001111;
     TRISE = 0b11111100;
 
-    TRISA = 0b11000001; // Set RA1, RA2, RA3, RA5 as outputs
-    TRISC = 0b00000000; // Set RC0 as output
+    TRISA = 0b11000001; 
+    TRISC = 0b00000000; 
 }
