@@ -72,6 +72,10 @@ void dspTask_OnTimer0Interrupt(void) {
         openingTimer--;
     }
 
+    if (GATE_STATUS == GATE_2_CLOSING && ALARM_BUZZER_COUNT == 0 && closingTimer > 0) {
+        closingTimer--;
+    }
+
     onLEDs(0, 0, 0);
     if (ALARM_BUZZER_COUNT > 0) {
         //onLEDs(1, 1, 1);
@@ -91,7 +95,7 @@ void dspTask_showStatus(void) {
     if (updateADC == 1) {
         ADC_WATER_LVL = adc_GetConversion(); // Get ADC reading
         newWaterStatus = ADC_WATER_LVL >= MIN_ALLOWABLE_LEVEL ? 1 : 0;
-        
+
         waterStatus_HasChange = WATER_STATUS != newWaterStatus ? 1 : 0;
         gateStatus_HasChange = 0;
 
@@ -108,7 +112,7 @@ void dspTask_showStatus(void) {
                     newGateStatus = 6;
                     gateStatus_HasChange = 1;
                 }
-            } else if (ADC_WATER_LVL>=500) {
+            } else {
                 if (GATE_STATUS >= GATE_4_TO_BE_OPEN && GATE_STATUS <= GATE_6_OPEN) {
                     newGateStatus = 1; // GATE_1_TO_BE_CLOSE
                     gateStatus_HasChange = 1;
