@@ -20,7 +20,7 @@ unsigned int getPeriod(void);
 
 // - Defined in other file(s)
 void dspTask_OnTimer0Interrupt(void);
-
+void usrTask_ActivateGateStop(void);
 
 unsigned int tmr1_TotalReqdCount;
 unsigned int tmr1_RunCount;
@@ -31,8 +31,8 @@ void __interrupt() isr(void) {
         dspTask_OnTimer0Interrupt(); // Call display task on Timer0 interrupt
 
         // Reload the preload value for next interrupt
-        TMR0H = 0x0B;
-        TMR0L = 0x0C;
+        TMR0H = TIMER0_TMR0H; // Set TMR0H
+        TMR0L = TIMER0_TMR0L; // Set TMR0L
     }
 
     unsigned int preload_value;
@@ -49,6 +49,13 @@ void __interrupt() isr(void) {
             // If running count has reached desired, stop the tone
             T1CONbits.TMR1ON = 0; // Stop timer
         }
+    }
+
+    // External interrupt
+    if (PIR0bits.INTF == 1) { // check INT flag
+        PIR0bits.INTF = 0; // clear INT flag
+        PORTAbits.RA1 = ~PORTAbits.RA1; // increment the number of INT count
+        usrTask_ActivateGateStop();
     }
 
 }
