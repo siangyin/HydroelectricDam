@@ -9,7 +9,7 @@ void playAlarm(unsigned int timer);
 // - Defined in other file(s):
 unsigned int adc_GetConversion(void);
 void seg_DspAll(unsigned int result);
-void display_Msg_OnLCD(unsigned char gate, unsigned char water);
+void lcd_DspStatus(unsigned char gate, unsigned char water);
 
 //void recordNewWater();
 void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
@@ -50,7 +50,6 @@ unsigned char usrActivatedClose = 0;
 
 
 // This function is called by the ISR whenever there is sa 1-second interrupt:
-
 void dspTask_OnTimer0Interrupt(void) {
     sec++; // Increment seconds
     if (sec > 99) {
@@ -132,7 +131,7 @@ void dspTask_UpdateStatus(void) {
     }
 
     if (updateLCD == 1) {
-        display_Msg_OnLCD(GATE_STATUS, WATER_STATUS);
+        lcd_DspStatus(GATE_STATUS, WATER_STATUS);
         updateLCD = 0;
     }
 

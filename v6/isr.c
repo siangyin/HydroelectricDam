@@ -4,9 +4,6 @@
 
 // Constants for timer and buzzer
 const unsigned int MAX_COUNT_VALUE_16BIT_TIMER = 65536;
-const unsigned int HALF_PERIOD[] = {478, 426, 379};
-const unsigned int FULL_PERIOD[] = {1046, 1175, 1319};
-
 
 const unsigned int HALF_PERIOD1 = 478; // 478, 426, 379
 const unsigned int FULL_PERIOD1 = 1046; // 1046, 1175, 1319
@@ -23,17 +20,16 @@ const unsigned int fullPeriods[] = {1046, 1175, 1319};
 // Function Declarations
 unsigned int getHalfPeriod(void);
 
-
 // - Defined in other file(s)
 void dspTask_OnTimer0Interrupt(void);
 void usrTask_ActivateGateStop(void);
 unsigned int helper_getToneIndex(unsigned int currCount);
 
+// Varaibles Declarations
 unsigned int tmr1TotalReqdCount;
 unsigned int tmr1RunCount;
 
 // Interrupt Service Routine
-
 void __interrupt() isr(void) {
     // Timer0 Interrupt
     if (PIR0bits.TMR0IF == 1) { // Check Timer0 interrupt flag
@@ -89,6 +85,5 @@ void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod) {
 unsigned int getHalfPeriod(void) {
     unsigned int toneIndex = helper_getToneIndex(ALARM_BUZZER_COUNT);
     return halfPeriods[toneIndex];
-
 }
 

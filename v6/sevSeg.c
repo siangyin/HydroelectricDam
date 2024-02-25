@@ -16,15 +16,13 @@ const unsigned char segTable[] = {
     0b11111111, // blank
 };
 
-// Function to display the ADC result on the 7-segment display
+// Display the ADC result on the 7-segment display
 void seg_DspAll(unsigned int result) {
-    int dig0, dig1, dig2, dig3;
-
     // Extract individual digits from the ADC result
-    dig0 = result % 10;
-    dig1 = (result / 10) % 10;
-    dig2 = (result / 100) % 10;
-    dig3 = (result / 1000) % 10;
+    int dig0 = result % 10;
+    int dig1 = (result / 10) % 10;
+    int dig2 = (result / 100) % 10;
+    int dig3 = (result / 1000) % 10;
 
     // Display each digit on the 7-segment display sequentially
     PORTAbits.RA5 = 0;
@@ -51,3 +49,4 @@ void seg_DspAll(unsigned int result) {
     __delay_ms(5);
     PORTC = segTable[10];
 }
+
