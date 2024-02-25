@@ -4,6 +4,7 @@
 #define LED1 PORTAbits.RA1
 #define LED2 PORTAbits.RA2
 #define LED3 PORTAbits.RA3
+#define MIN_ALLOWABLE_LEVEL 800 
 
 // Function Declarations:
 // - Defined in this file:
@@ -15,8 +16,8 @@ void playAlarm(unsigned int timer);
 unsigned int adc_GetConversion(void);
 void seg_DspAll(unsigned int result);
 void lcd_DspStatus(unsigned char gate, unsigned char water);
-void tmr1_StartTone(unsigned int halfPeriod, unsigned int fullPeriod);
-unsigned int helper_getToneIndex(unsigned int currCount);
+void tmr1_MakeTone(unsigned int halfPeriod, unsigned int fullPeriod);
+unsigned int isr_GetToneIndex(unsigned int currCount);
 
 // External variables:
 extern unsigned char GATE_MODE;
@@ -212,16 +213,16 @@ void onLEDs(unsigned char led1, unsigned char led2, unsigned char led3) {
 }
 
 void playAlarm(unsigned int timer) {
-    unsigned int toneIndex = helper_getToneIndex(timer);
+    unsigned int toneIndex = isr_GetToneIndex(timer);
     switch (toneIndex) {
         case 2:
-            tmr1_StartTone(HALF_PERIOD3, FULL_PERIOD3);
+            tmr1_MakeTone(HALF_PERIOD3, FULL_PERIOD3);
             break;
         case 1:
-            tmr1_StartTone(HALF_PERIOD2, FULL_PERIOD2);
+            tmr1_MakeTone(HALF_PERIOD2, FULL_PERIOD2);
             break;
         default:
-            tmr1_StartTone(HALF_PERIOD1, FULL_PERIOD1);
+            tmr1_MakeTone(HALF_PERIOD1, FULL_PERIOD1);
             break;
     }
 
